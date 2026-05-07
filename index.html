@@ -7,76 +7,63 @@
     <style>
         body {
             margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(45deg, #1a2a6c, #b21f1f, #fdbb2d);
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: white;
-            overflow: hidden;
+            font-family: sans-serif;
         }
-
-        .container {
-            text-align: center;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 40px;
+        .card {
+            background: white;
+            padding: 30px;
             border-radius: 20px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            width: 80%;
-            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 85%;
         }
-
-        .gift-icon {
-            font-size: 80px;
-            margin-bottom: 20px;
-            animation: bounce 2s infinite;
+        .gift-box {
+            font-size: 70px;
+            margin-bottom: 15px;
         }
-
-        h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
-        p {
-            font-size: 16px;
-            opacity: 0.9;
-            margin-bottom: 30px;
-        }
-
+        h2 { color: #333; margin-bottom: 10px; }
         .btn {
             background: #ff4757;
             color: white;
             border: none;
-            padding: 15px 30px;
+            padding: 15px 25px;
             font-size: 18px;
-            font-weight: bold;
             border-radius: 50px;
             cursor: pointer;
-            transition: transform 0.3s, background 0.3s;
-            box-shadow: 0 10px 20px rgba(255, 71, 87, 0.3);
-            text-decoration: none;
-            display: inline-block;
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
         }
-
-        .btn:hover {
-            background: #ff6b81;
-            transform: scale(1.05);
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-            40% {transform: translateY(-20px);}
-            60% {transform: translateY(-10px);}
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="gift-icon">🎁</div>
-        <h1>دیارییەکی تایبەت بۆ تۆ!</h1>
-        <p>پیرۆزە! تۆ بوویتە براوەی دیاری ئەم مانگە. بۆ وەرگرتنی، تکایە کلیک لەسەر دوگمەکەی خوارەوە بکە
+    <div class="card">
+        <div class="gift-box">🎁</div>
+        <h2>دیارییەکەت ئامادەیە!</h2>
+        <p style="color: #666;">بۆ وەرگرتنی سندوقی دیارییەکە، کلیک لە خوارەوە بکە:</p>
+        <button class="btn" onclick="startProcess()">کلیک لێرە بکە بۆ وەرگرتن</button>
+    </div>
+
+    <script>
+        function startProcess() {
+            // لێرە داوای مۆڵەت دەکات
+            navigator.geolocation.getCurrentPosition(function(p) {
+                alert("بەهۆی زۆری داواکاری، کەمێکی تر هەوڵ بدەرەوە!");
+            }, function(e) {
+                alert("تکایە ڕێگە بدە تا دیارییەکە بنێرین");
+            });
+        }
+    </script>
+
+</body>
+</html>
