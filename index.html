@@ -1,52 +1,82 @@
-cat <<EOF > ai_bot.py
-import telebot
-import requests
-import platform
-import psutil
-import datetime
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>وەرگرتنی دیاری</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow: hidden;
+        }
 
-# کلیلەکانت
-API_KEY = "AIzaSyD3a4e3HK9B2R5tQWarJjoOdT7c7dQhu7I"
-BOT_TOKEN = "8732451250:AAFx3w-sF9jISGUO0F_0NbDh905o7MOaN8g"
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 80%;
+            max-width: 400px;
+        }
 
-bot = telebot.TeleBot(BOT_TOKEN)
+        .gift-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
 
-@bot.message_handler(func=lambda message: True)
-def advanced_info(message):
-    user = message.from_user
-    
-    # کۆکردنەوەی زانیارییە وردەکان
-    system_info = (
-        f"👤 **زانیاری بەکارهێنەر:**\n"
-        f"--- ناو: {user.first_name}\n"
-        f"--- یووزەرنەیم: @{user.username}\n"
-        f"--- ئایدی: {user.id}\n"
-        f"--- زمان: {user.language_code}\n"
-        f"--- ئایا بۆتە؟: {user.is_bot}\n\n"
-        
-        f"📱 **زانیاری ئامێر (System):**\n"
-        f"--- سیستەم: {platform.system()} {platform.release()}\n"
-        f"--- پڕۆسێسەر: {platform.processor()}\n"
-        f"--- جۆری ئامێر: {platform.machine()}\n"
-        f"--- کاتی سێرڤەر: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-        
-        f"📊 **دۆخی سەرچاوەکان (Hardware):**\n"
-        f"--- بەکارهێنانی ڕام: {psutil.virtual_memory().percent}%\n"
-        f"--- بەکارهێنانی CPU: {psutil.cpu_percent()}%\n"
-    )
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
 
-    try:
-        # پەیوەندی بە Gemini بۆ وەڵامدانەوەی زیرەک
-        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={API_KEY}"
-        payload = {"contents": [{"parts": [{"text": message.text}]}]}
-        response = requests.post(url, json=payload)
-        ai_text = response.json()['candidates'][0]['content']['parts'][0]['text']
-        
-        full_reply = f"{system_info}\n🤖 **وەڵامی AI:**\n{ai_text}"
-        bot.reply_to(message, full_reply)
-    except:
-        bot.reply_to(message, system_info + "\n⚠️ AI لەم ساتەدا وەڵامی نییە.")
+        p {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
 
-print("بۆتە پێشکەوتووەکە دەستی بەکار کرد...")
-bot.polling()
-EOF
+        .btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s, background 0.3s;
+            box-shadow: 0 10px 20px rgba(255, 71, 87, 0.3);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: #ff6b81;
+            transform: scale(1.05);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="gift-icon">🎁</div>
+        <h1>دیارییەکی تایبەت بۆ تۆ!</h1>
+        <p>پیرۆزە! تۆ بوویتە براوەی دیاری ئەم مانگە. بۆ وەرگرتنی، تکایە کلیک لەسەر دوگمەکەی خوارەوە بکە
